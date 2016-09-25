@@ -1,8 +1,5 @@
 iOSMessageExport
 ================
-This is not exactly the best way to use Perl. However, I wanted to create it as simple and readable as I possibly could so that others would be able to modify the code to better suit them. Also, if you are not a programmer, you may find this difficult. You can email me for help but if you need something more user friendly, there's a lot of paid apps out there that are more elegant :) 
-
-
 Notes
 
 * Emojis would only show up when viewing the pages in Safari. 
@@ -13,23 +10,17 @@ Notes
 
 Basic steps: 
 
-1. Make a directory somewhere 
-    ```
-    mkdir ~/Desktop/iOSBackup
-    ```
-2. Add this repository to your ~/Desktop/iOSBackup directory 
-    ```
-    cd ~/Desktop/iOSBackup
+1. Create a local back up of your iPhone data via iTunes (https://support.apple.com/en-us/HT203977)
+1. Find your text message backup. This is most likely in /Users/[username]/Library/Application Support/MobileSync/Backup/f8c0f686125a05acdefb3ca867502ec6213ec757/3d0d7e5fb2ce288813306e4d4636395e047a3d28
+1. Clone this repo
+1. Copy the text message backup folder into this directory
+1. Run backup.pl, passing the backup directory:
+```
+perl iOSMessageExport/backup.pl --directory_path [whatever your copied directory is called]
+```
+If you see an error that iOSSMSBackup cannot be found, you may need to run 
+```
+export PERLLIB=iOSMessageExport/
+```
+1. View the resulting content in the newly-created folder, "_export"
 
-    git clone git@github.com:chelseybaker/iOSMessageExport.git
-    ```
-3. I reccomend copying your iTunes backup into your ~/Desktop/iOSBackup folder, just in case something bad happens (as I am not responsible for your misfortunes). Run backup.pl passing the backup directory. 
-    ```
-    perl iOSMessageExport/backup.pl --directory_path 9b9f73759fad7b31e330dd26bf7f745acccf1869/
-    ```
-    If you see an error that iOSSMSBackup cannot be found, you may need to run 
-    ```
-    export PERLLIB=iOSMessageExport/
-    ```
-
-4. An _export folder will be created in your working directory with all of your files! 
