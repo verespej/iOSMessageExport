@@ -11,16 +11,16 @@ Notes
 Basic steps: 
 
 1. Create a local back up of your iPhone data via iTunes (https://support.apple.com/en-us/HT203977)
-1. Find your text message backup. This is most likely in /Users/[username]/Library/Application Support/MobileSync/Backup/f8c0f686125a05acdefb3ca867502ec6213ec757/3d0d7e5fb2ce288813306e4d4636395e047a3d28
-1. Clone this repo
-1. Copy the text message backup folder into this directory
+1. Find your iPhone backup data. This is most likely in /Users/[username]/Library/Application Support/MobileSync/Backup/f8c0f686125a05acdefb3ca867502ec6213ec757/. Note: Text messages are contained in 3d0d7e5fb2ce288813306e4d4636395e047a3d28.
+1. Clone this repo and cd into the directory created by the clone.
+1. Copy the backup folder into this directory.
 1. Run backup.pl, passing the backup directory:
-```
-perl iOSMessageExport/backup.pl --directory_path [whatever your copied directory is called]
-```
-If you see an error that iOSSMSBackup cannot be found, you may need to run 
-```
-export PERLLIB=iOSMessageExport/
-```
+	```
+	perl iOSMessageExport/backup.pl --directory_path [whatever your copied directory is called]
+	```
+	If you see an error that iOSSMSBackup cannot be found, you may need to run 
+	```
+	export PERLLIB=iOSMessageExport/
+	```
 1. View the resulting content in the newly-created folder, "_export"
 
