@@ -69,18 +69,22 @@ function extractAsJson(filePath, otherPersonsPhoneNumber) {
 		});
 	});
 
-	console.log(messages);
+	return messages;
 }
 
-let targetPhoneNumber = '';
-let dataDir = './_export/' + targetPhoneNumber;
-fs.readdirAsync(dataDir).then(fileNames => {
-	fileNames.filter(fileName => /20160803\.html$/.test(fileName)).reduce((set, fileName) => {
-		set.push(fs.readFileAsync(path.join(dataDir, fileName)).then(content => {
-			return extractAsJson(content, targetPhoneNumber);
-		}));
-		return set;
-	}, []);
-}).catch(err => {
-	console.dir(err);
-});
+function parse(exportDir, phoneNumber, fileFilterRegex) {
+	let dirPath = path.join(exportDir, phoneNumber);
+	fileFilterRegex = fileFilterRegex || /.*\.html$/;
+	return fs.readdirAsync(dirPath).then(fileNames => {
+		return fileNames.filter(fileName => fileFilterRegex.test(fileName)).reduce((set, fileName) => {
+			set.push(fs.readFileAsync(path.join(dirPath, fileName)).then(content => {
+				return extractAsJson(content, phoneNumber);
+			}));
+			return set;
+		}, []);
+	}).all();
+}
+
+module.exports = {
+	parse: parse
+};
