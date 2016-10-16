@@ -33,7 +33,7 @@ function parseMessageTextAndImages($, el) {
 		images.push($(img).attr('src'));
 	});
 
-	let text = $(el).find('.text').html();
+	let text = $(el).find('.text').html().replace(/\n/g, '<br />');
 	let matches = text.match(/&#xFFFC;/ig);
 	if (matches) {
 		if (matches.length !== images.length) {
@@ -75,7 +75,7 @@ function extractAsJson(filePath, otherPersonsPhoneNumber) {
 let targetPhoneNumber = '';
 let dataDir = './_export/' + targetPhoneNumber;
 fs.readdirAsync(dataDir).then(fileNames => {
-	fileNames.filter(fileName => /20160210\.html$/.test(fileName)).reduce((set, fileName) => {
+	fileNames.filter(fileName => /20160803\.html$/.test(fileName)).reduce((set, fileName) => {
 		set.push(fs.readFileAsync(path.join(dataDir, fileName)).then(content => {
 			return extractAsJson(content, targetPhoneNumber);
 		}));
