@@ -27,61 +27,84 @@ function getMomentFromTextTimeString(base, timeText) {
 	return timestamp;
 }
 
-function parseMessageTextAndImages($, el) {
-	let images = [];
+function parseMessageTextAndMedia($, el, dirPath) {
+	let media = [];
 	$(el).find('img').each((index, img) => {
-		images.push($(img).attr('src'));
+		media.push({
+			type: 'image',
+			url: 'file://' + path.join(dirPath, $(img).attr('src'))
+		});
+	});
+	$(el).find('video > source').each((index, vid) => {
+		media.push({
+			type: 'video',
+			url: 'file://' + path.join(dirPath, $(vid).attr('src'))
+		});
 	});
 
-	let text = $(el).find('.text').html().replace(/\n/g, '<br />');
-	let matches = text.match(/&#xFFFC;/ig);
+	let html = $(el).find('.text').html().replace(/\n/g, '<br />');
+	let matches = html.match(/&#xFFFC;/ig);
 	if (matches) {
-		if (matches.length !== images.length) {
-			throw new Error('Image spaces in text should match number of images: ' + matches.length + ' !== ' + images.length);
+		if (matches.length !== media.length) {
+			console.log($(el).html());
+			console.log(html);
+			throw new Error('Image spaces in html should match number of media items: ' + matches.length + ' !== ' + media.length);
 		}
 		for (let i = 0; i < matches.length; i++) {
-			text = text.replace(/&#xFFFC;/i, '<img src="' + images[i] + '" />');
+			if (media[i].type === 'image') {
+				html = html.replace(/&#xFFFC;/i, '<img src="' + media[i].url + '" />');
+			} else if (media[i].type === 'video') {
+				html = html.replace(/&#xFFFC;/i, '<video controls><source src="' + media[i].url + '" /></video>');
+			}
 		};
 	}
 
 	return {
-		text: text,
-		images: images
+		html: html,
+		media: media
 	};
 }
 
-function extractAsJson(fileContent, myPhone, theirPhone) {
+function extractAsJson(fileName, fileContent, theirPhone, myPhone, dirPath) {
 	let $ = cheerio.load(fileContent);
 
 	let header = parseHeader($('.title_header').text());
+	// Base date in header is incorrect due to UTC mis-use
+	let baseTimestamp = moment(/(\d{8})\.html$/.exec(fileName)[1], 'YYYYMMDD');
 
 	let messages = [];
 	$('.texts > div').each((index, el) => {
-		let content = parseMessageTextAndImages($, el);
+		let content = parseMessageTextAndMedia($, el, dirPath);
 		messages.push({
 			id: $(el).attr('id'),
-			timestamp: getMomentFromTextTimeString(header.date, $(el).find('.time').text()).format(),
-			source: 'SMS',
+			timestamp: getMomentFromTextTimeString(baseTimestamp, $(el).find('.time').text()),
+			source: 'sms',
 			sender: $(el).hasClass('sent') ? myPhone : theirPhone,
-			text: content.text,
-			images: content.images
+			html: content.html,
+			media: content.media
 		});
 	});
 
 	return messages;
 }
 
-function parse(exportDir, myPhone, theirPhone, /* optional */ fileFilterRegex) {
-	let dirPath = path.join(exportDir, theirPhone);
+function parse(exportDir, theirPhone, myPhone, /* optional */ fileFilterRegex) {
+	let dirPath = path.resolve(process.cwd(), exportDir, theirPhone);
 	fileFilterRegex = fileFilterRegex || /.*\.html$/;
 	return fs.readdirAsync(dirPath).then(fileNames => {
 		return fileNames.filter(fileName => fileFilterRegex.test(fileName)).reduce((set, fileName) => {
-			set.push(fs.readFileAsync(path.join(dirPath, fileName)).then(content => {
-				return extractAsJson(content, myPhone, theirPhone);
+			set = set.concat(fs.readFileAsync(path.join(dirPath, fileName)).then(content => {
+				return extractAsJson(fileName, content, theirPhone, myPhone, dirPath);
 			}));
 			return set;
 		}, []);
-	}).all();
+	}).all().then(results => {
+		// This is an array of arrays since it's the result of evaluating promises
+		return results.reduce((flattened, entry) => {
+			flattened = flattened.concat(entry);
+			return flattened;
+		}, []);
+	});
 }
 
 module.exports = {

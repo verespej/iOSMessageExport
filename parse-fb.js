@@ -69,6 +69,7 @@ function parseImageInfoFromScrape(text) {
 	}
 
 	return {
+		type: 'image',
 		url: url,
 		width: parsed[2],
 		height: parsed[3]
@@ -80,11 +81,12 @@ function parseLinkPreviewFromScrape($, el) {
 	let descriptionNode = $(el).find('.__6l');
 
 	return {
+		type: 'link-preview',
+		url: image.attr('src'),
+		width: image.attr('width'),
 		title: $(el).find('.__6k').text(),
 		description: descriptionNode.length > 0 ? descriptionNode.text() : '',
-		reference: $(el).find('.__6m').text(),
-		imageUrl: image.attr('src'),
-		imageDimension: image.attr('width')
+		reference: $(el).find('.__6m').text()
 	};
 }
 
@@ -97,29 +99,29 @@ function parseMessageGroup($, messageGroupEl) {
 	$(messageGroupEl).find('._38 > span,._4yp9,[aria-label*="sticker"],.__nm').each((i, el) => {
 		let message = {
 			id: baseId + '.' + i,
-			timestamp: timestamp.format(),
-			source: 'Facebook',
+			timestamp: timestamp,
+			source: 'facebook',
 			sender: senderName,
-			text: '',
-			images: []
+			html: '',
+			media: []
 		};
 
 		if ($(el).hasClass('_4yp9') || $(el).is('[aria-label*="sticker"]')) {
-			let imageInfo = parseImageInfoFromScrape($(el).attr('style'));
-			message.text = '<img src="' + imageInfo.url + '" width="' + imageInfo.width + '" height="' + imageInfo.height + '" />';
-			message.images.push(imageInfo.url);
+			let mediaInfo = parseImageInfoFromScrape($(el).attr('style'));
+			message.html = '<img src="' + mediaInfo.url + '" width="' + mediaInfo.width + '" height="' + mediaInfo.height + '" />';
+			message.media.push(mediaInfo);
 		} else if ($(el).hasClass('__nm')) {
-			let previewInfo = parseLinkPreviewFromScrape($, el);
-			if (!previewInfo.imageUrl) {
+			let mediaInfo = parseLinkPreviewFromScrape($, el);
+			if (!mediaInfo.url) {
 				return;
 			}
-			message.text = '<img src="' + previewInfo.imageUrl + '" width="' + previewInfo.imageDimension + '" /><br />' +
-				previewInfo.title + '<br />' +
-				(previewInfo.description.length > 0 ? previewInfo.description + '<br />' : '') +
-				previewInfo.reference;
-			message.images.push(previewInfo.imageUrl);
+			message.html = '<img src="' + mediaInfo.url + '" width="' + mediaInfo.width + '" /><br />' +
+				mediaInfo.title + '<br />' +
+				(mediaInfo.description.length > 0 ? mediaInfo.description + '<br />' : '') +
+				mediaInfo.reference;
+			message.media.push(mediaInfo);
 		} else {
-			message.text = $(el).html();
+			message.html = $(el).html();
 		}
 
 		messages.push(message);
@@ -135,6 +137,7 @@ function parseFromScrape(filePath) {
 		$('.webMessengerMessageGroup').each((i, el) => {
 			messages = messages.concat(parseMessageGroup($, el));
 		});
+		return messages;
 	});
 }
 
