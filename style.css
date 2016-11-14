@@ -35,14 +35,21 @@
 
 .message.to-them {
   margin-left: auto;
-  background-color: #1D62F0;
+  background-color: #1B8CF4;
   color: #FFFFFF;
+}
+
+.message.media {
+  padding: 0px;
+  max-width: 79%;
+  background-color: rgba(255, 255, 255, 0.0);
+}
+
+.message img {
+  max-width: 100%;
+  border-radius: 18px;
 }
 
 p {
   margin: 0px;
-}
-
-img {
-  max-width: 100%;
 }

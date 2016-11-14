@@ -24,3 +24,6 @@ Basic steps:
 	```
 1. View the resulting content in the newly-created folder, "_export"
 
+TODO:
+* Need to fix FB media previews
+* Need text bubble tail

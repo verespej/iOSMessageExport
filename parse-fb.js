@@ -106,6 +106,13 @@ function parseMessageGroup($, messageGroupEl) {
 			media: []
 		};
 
+		// Remove duplicate icon representations
+		$(el).find('._47e3').each((i, emojiGroupEl) => {
+			if ($(emojiGroupEl).find('.img').length > 0 && $(emojiGroupEl).find('._7oe').length > 0) {
+				$(emojiGroupEl).find('._7oe').remove();
+			}
+		});
+
 		if ($(el).hasClass('_4yp9') || $(el).is('[aria-label*="sticker"]')) {
 			let mediaInfo = parseImageInfoFromScrape($(el).attr('style'));
 			message.html = '<img src="' + mediaInfo.url + '" width="' + mediaInfo.width + '" height="' + mediaInfo.height + '" />';
